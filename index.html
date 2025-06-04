@@ -1,32 +1,18 @@
-<!-- filepath: /homework-routine-tracker/homework-routine-tracker/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Homework Routine Tracker</title>
+  <title>Homework Tracker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>📚 Homework Routine Tracker</h1>
-
-  <div class="mode-switch">
-    <button id="teacherModeBtn">👩‍🏫 Teacher Mode</button>
-    <button id="studentModeBtn">👦 Student Mode</button>
+  <h1>📚 Student Homework Tracker</h1>
+  <div>
+    <button onclick="switchMode('teacher')">👩‍🏫 Teacher Mode</button>
+    <button onclick="switchMode('student')">👦 Student Mode</button>
   </div>
-
-  <div id="teacherSection" class="section hidden">
-    <h2>👩‍🏫 Teacher: Add Homework</h2>
-    <div id="homeworkInputs"></div>
-    <button onclick="saveHomework()">💾 Save Homework</button>
-  </div>
-
-  <div id="studentSection" class="section hidden">
-    <h2>👦 Student: Mark Homework as Read</h2>
-    <div id="homeworkList"></div>
-  </div>
-
-  <button onclick="resetData()" class="reset-btn">❌ Reset All</button>
+  <div id="app"></div>
 
   <script src="script.js"></script>
 </body>
