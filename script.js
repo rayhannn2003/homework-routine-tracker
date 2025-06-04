@@ -1,57 +1,88 @@
-// This file contains the JavaScript code for the Homework Routine Tracker application.
+let currentMode = 'student';
+const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-let homeworkList = [];
-let currentMode = 'teacher'; // Default mode is teacher
+function loadHomework() {
+  return JSON.parse(localStorage.getItem('homeworkData') || '{}');
+}
 
-document.getElementById('teacherModeBtn').addEventListener('click', () => {
-    switchMode('teacher');
-});
+function saveHomework(data) {
+  localStorage.setItem('homeworkData', JSON.stringify(data));
+}
 
-document.getElementById('studentModeBtn').addEventListener('click', () => {
-    switchMode('student');
-});
+function renderApp() {
+  const container = document.getElementById('app');
+  container.innerHTML = '';
+  const data = loadHomework();
+
+  weekdays.forEach(day => {
+    const tasks = data[day] || [];
+    const section = document.createElement('div');
+    section.innerHTML = `<h2>${day}</h2>`;
+
+    if (currentMode === 'teacher') {
+      const taskList = document.createElement('div');
+      tasks.forEach((task, idx) => {
+        const div = document.createElement('div');
+        div.className = 'task-item';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = task;
+        input.oninput = () => {
+          data[day][idx] = input.value;
+          saveHomework(data);
+        };
+
+        const del = document.createElement('button');
+        del.textContent = '❌';
+        del.onclick = () => {
+          data[day].splice(idx, 1);
+          saveHomework(data);
+          renderApp();
+        };
+
+        div.appendChild(input);
+        div.appendChild(del);
+        taskList.appendChild(div);
+      });
+
+      const addBtn = document.createElement('button');
+      addBtn.textContent = '➕ Add Task';
+      addBtn.onclick = () => {
+        if (!data[day]) data[day] = [];
+        data[day].push('');
+        saveHomework(data);
+        renderApp();
+      };
+      section.appendChild(taskList);
+      section.appendChild(addBtn);
+    } else {
+      const progress = JSON.parse(localStorage.getItem('progress') || '{}');
+      const ul = document.createElement('ul');
+      tasks.forEach((task, idx) => {
+        const li = document.createElement('li');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = (progress[day] || [])[idx];
+        chk.onchange = () => {
+          if (!progress[day]) progress[day] = [];
+          progress[day][idx] = chk.checked;
+          localStorage.setItem('progress', JSON.stringify(progress));
+        };
+        li.appendChild(chk);
+        li.appendChild(document.createTextNode(' ' + task));
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+    }
+
+    container.appendChild(section);
+  });
+}
 
 function switchMode(mode) {
-    currentMode = mode;
-    document.getElementById('teacherSection').classList.toggle('hidden', mode !== 'teacher');
-    document.getElementById('studentSection').classList.toggle('hidden', mode !== 'student');
-    if (mode === 'student') {
-        displayHomeworkList();
-    }
+  currentMode = mode;
+  renderApp();
 }
 
-function saveHomework() {
-    const homeworkInputs = document.getElementById('homeworkInputs');
-    const homeworkItems = homeworkInputs.getElementsByTagName('input');
-    for (let item of homeworkItems) {
-        if (item.value) {
-            homeworkList.push(item.value);
-            item.value = ''; // Clear input after saving
-        }
-    }
-    alert('Homework saved!');
-}
-
-function displayHomeworkList() {
-    const homeworkListDiv = document.getElementById('homeworkList');
-    homeworkListDiv.innerHTML = ''; // Clear previous list
-    homeworkList.forEach((homework, index) => {
-        const homeworkItem = document.createElement('div');
-        homeworkItem.textContent = homework;
-        const markAsReadBtn = document.createElement('button');
-        markAsReadBtn.textContent = '✅ Mark as Read';
-        markAsReadBtn.onclick = () => {
-            homeworkList.splice(index, 1); // Remove item from list
-            displayHomeworkList(); // Refresh the list
-        };
-        homeworkItem.appendChild(markAsReadBtn);
-        homeworkListDiv.appendChild(homeworkItem);
-    });
-}
-
-function resetData() {
-    homeworkList = [];
-    document.getElementById('homeworkInputs').innerHTML = ''; // Clear inputs
-    document.getElementById('homeworkList').innerHTML = ''; // Clear homework list
-    alert('All data has been reset!');
-}
+window.onload = renderApp;
